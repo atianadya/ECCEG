@@ -89,7 +89,6 @@ public class EllipticCurve {
                 return point + ((scalar-1)*point)
         */
         
-        
         if (scalar.equals(BigInteger.ZERO)) {
             return new Point (new BigInteger("0"), new BigInteger("0"));
         } else if (scalar.equals(BigInteger.ONE)) {
@@ -105,6 +104,11 @@ public class EllipticCurve {
         }
     }
     
+    public Point subtract(Point p1, Point q1) {
+        Point minQ = new Point(q1.getX(), q1.getY().multiply(new BigInteger("-1")).mod(p));
+        return add(p1, minQ);
+    }
+    
     public boolean isInGroup(Point point) {
         BigInteger RHS = ((point.getX().pow(3)).add(a.multiply(point.getX())).add(b)).mod(p);
         BigInteger LHS = (point.getY().pow(2)).mod(p);
@@ -116,15 +120,25 @@ public class EllipticCurve {
         return LHS.equals(RHS);
     }
     
-    public static BigInteger solveForY(BigInteger X) {
+    public Point solveForY(BigInteger m, BigInteger kaux) {
+        BigInteger x,yy,y;
         
-        // SOMEONE
-        // H
-        // A
-        // L
-        // P
+        for (BigInteger i = BigInteger.ONE; i.compareTo(kaux) == -1; i = i.add(BigInteger.ONE)) {
+            x = m.multiply(kaux).add(i);
+            yy = (x.pow(3).add(a.multiply(x)).add(b)).mod(p);
+            if (yy.modPow(p.subtract(BigInteger.ONE).divide(new BigInteger("2")), p).compareTo(BigInteger.ONE) == 0) {
+                System.out.println(i);
+                System.out.println(yy);
+                y = yy.modPow(p.add(BigInteger.ONE).divide(new BigInteger("4")), p);
+                return new Point(x,y);
+            }
+        }
         
-        return BigInteger.ONE;
+        return new Point(new BigInteger("-1"), new BigInteger("-1"));
+    }
+    
+    public Point getBasePoint() {
+        return base;
     }
     
 }

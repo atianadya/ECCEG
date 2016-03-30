@@ -16,40 +16,40 @@ public class ECCEG {
     /**
      * @param args the command line arguments
      */
+    
+    private final EllipticCurve ec;
+    private final BigInteger privateKey;
+    public static Point publicKey;
+    
+    public ECCEG(EllipticCurve ec, BigInteger bi) {
+        this.ec = ec;
+        privateKey = bi;
+        publicKey = ec.multiply(ec.getBasePoint(), privateKey);
+    }
+    
+    public Point[] encrypt(Point pm, BigInteger k, Point recpPublicKey) {
+        // k ∈ [1, p-1]
+        // pc = [(kB, (Pm + kPb)]
+        Point[] pc = new Point[2];
+        pc[0] = ec.multiply(ec.getBasePoint(), k);
+        pc[1] = ec.add(pm, ec.multiply(recpPublicKey, k));
+        
+        return pc;
+    }
+    
+    public Point decrypt (Point[] pc) {
+        Point pm = ec.subtract(pc[1], ec.multiply(pc[0], privateKey));
+        return pm;
+    }
+    
     public static void main(String[] args) {
         // TODO code application logic here
-        System.out.println("EC operations test");
         
-        Point P = new Point(new BigInteger("2"), new BigInteger("4"));
-        Point Q = new Point(new BigInteger("5"), new BigInteger("9"));
-        EllipticCurve ec = new EllipticCurve(new BigInteger("1"), new BigInteger("6"),
-                new BigInteger("11"), new Point(BigInteger.ZERO, BigInteger.ZERO));
+        Point base = new Point(BigInteger.ZERO, BigInteger.ZERO);
+        EllipticCurve ec = new EllipticCurve(new BigInteger("-1"), new BigInteger("188"), new BigInteger("751"), base);
+//        Point b = ec.solveForY(new BigInteger("11"), new BigInteger("20"));
+//        System.out.println(b.toString());
         
-        System.out.println(ec.add(P, Q).toString());
-        System.out.println(ec.doubles(P));
-        System.out.println(ec.multiply(P, new BigInteger("3")));
-        
-        System.out.println();
-        
-        System.out.println("Koblitz test");
-        
-        BigInteger a = new BigInteger("1");
-        BigInteger b = new BigInteger("0");
-        BigInteger p = new BigInteger("23");
-        EllipticCurve eckob = new EllipticCurve(a, b, p, new Point(BigInteger.ZERO, BigInteger.ZERO));
-        
-        System.out.println(eckob.isInGroup(new Point(new BigInteger("5"), new BigInteger("9"))));
-        
-        a = new BigInteger("-1");
-        b = new BigInteger("188");
-        p = new BigInteger("751");
-        
-        EllipticCurve eck = new EllipticCurve(a, b, p, new Point(BigInteger.ZERO, BigInteger.ZERO));
-        
-//        eckob.solveForY(new BigInteger("224"));
-//        KeyGenerator kg = new KeyGenerator();
-//        
-//        System.out.println(kg.generatePrivateKey());
     }
     
 }

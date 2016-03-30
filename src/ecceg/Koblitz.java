@@ -14,8 +14,8 @@ import java.math.BigInteger;
 public class Koblitz {
     
     // untested
-    public Point[] encode(String plain, EllipticCurve ec) {
-        Point[] pointseq = new Point[plain.length()];
+    public static Point[] encode(byte[] data, EllipticCurve ec) {
+        Point[] pointseq = new Point[data.length];
         // pick elliptic curve
         // choose aux base parameter e.g. k = 20
         // foreach number mk, take x = mk + 1, try to solve for y
@@ -23,8 +23,9 @@ public class Koblitz {
         // take point (x, y)
         
         BigInteger k = new BigInteger("20");
-        for (int i=0; i<plain.length(); i++) {
-            BigInteger m = BigInteger.valueOf(plain.charAt(i));
+        
+        for (int i=0; i<data.length; i++) {
+            byte m = data[i];
             pointseq[i] = encodeInd(m,ec,k);
         }
         
@@ -32,20 +33,17 @@ public class Koblitz {
     }
     
     // untested
-    public Point encodeInd(BigInteger m, EllipticCurve ec, BigInteger kaux) {
-        BigInteger x;
-        for (BigInteger i = BigInteger.ONE; i.compareTo(kaux) == -1; i = i.add(BigInteger.ONE)) {
-            x = m.multiply(kaux).add(i);
-            if (EllipticCurve.solveForY(x) != null) {
-                return new Point(x, EllipticCurve.solveForY(x));
-            }
-        }
+    public static Point encodeInd(byte data, EllipticCurve ec, BigInteger kaux) {
+        int bdata = data & 0xFF;
+        BigInteger x,y;
+        BigInteger m = BigInteger.valueOf(bdata);
+        Point encoded = ec.solveForY(m,kaux);
         
         return new Point(new BigInteger("-99"), new BigInteger("-99"));
     }
     
     // untested
-    public String decode(Point[] pointseq, BigInteger kaux) {
+    public static String decode(Point[] pointseq, BigInteger kaux) {
         String decoded = null;
         BigInteger[] biseq = new BigInteger[pointseq.length];
         
@@ -57,7 +55,7 @@ public class Koblitz {
         return decoded;
     }
     
-    public BigInteger decodeInd(Point cipherpoint, BigInteger kaux) {
+    public static BigInteger decodeInd(Point cipherpoint, BigInteger kaux) {
         return (cipherpoint.getX().subtract(BigInteger.ONE)).divide(kaux);
     }
     
