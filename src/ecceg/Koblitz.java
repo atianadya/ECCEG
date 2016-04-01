@@ -13,9 +13,8 @@ import java.math.BigInteger;
  */
 public class Koblitz {
     
-    // untested
-    public static Point[] encode(byte[] data, EllipticCurve ec) {
-        Point[] pointseq = new Point[data.length];
+    public static Point[] encode(String data, EllipticCurve ec) {
+        Point[] pointseq = new Point[data.length()];
         // pick elliptic curve
         // choose aux base parameter e.g. k = 20
         // foreach number mk, take x = mk + 1, try to solve for y
@@ -24,27 +23,25 @@ public class Koblitz {
         
         BigInteger k = new BigInteger("20");
         
-        for (int i=0; i<data.length; i++) {
-            byte m = data[i];
-            pointseq[i] = encodeInd(m,ec,k);
+        for (int i=0; i<data.length(); i++) {
+            Integer ch = (int)data.charAt(i);
+            BigInteger chara = BigInteger.valueOf(ch.intValue());
+            pointseq[i] = encodeInd(chara,ec,k);
         }
         
         return pointseq;
     }
-    
-    // untested
-    public static Point encodeInd(byte data, EllipticCurve ec, BigInteger kaux) {
-        int bdata = data & 0xFF;
+     
+   // untested
+    private static Point encodeInd(BigInteger m, EllipticCurve ec, BigInteger kaux) {
         BigInteger x,y;
-        BigInteger m = BigInteger.valueOf(bdata);
         Point encoded = ec.solveForY(m,kaux);
-        
-        return new Point(new BigInteger("-99"), new BigInteger("-99"));
+        return encoded;
     }
     
     // untested
     public static String decode(Point[] pointseq, BigInteger kaux) {
-        String decoded = null;
+        String decoded = "";
         BigInteger[] biseq = new BigInteger[pointseq.length];
         
         for (int i=0; i<pointseq.length; i++) {
@@ -55,7 +52,7 @@ public class Koblitz {
         return decoded;
     }
     
-    public static BigInteger decodeInd(Point cipherpoint, BigInteger kaux) {
+    private static BigInteger decodeInd(Point cipherpoint, BigInteger kaux) {
         return (cipherpoint.getX().subtract(BigInteger.ONE)).divide(kaux);
     }
     
