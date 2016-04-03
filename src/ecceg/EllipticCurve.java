@@ -23,10 +23,13 @@ public class EllipticCurve {
     public static BigInteger p;
     public static Point base;
     
-    public EllipticCurve(BigInteger a, BigInteger b, BigInteger p, Point base) {
+    public EllipticCurve(BigInteger a, BigInteger b, BigInteger p) {
         this.a = a;
         this.b = b;
         this.p = p;
+    }
+    
+    public void setBase(Point base) {
         this.base = base;
     }
     
@@ -34,21 +37,27 @@ public class EllipticCurve {
     public Point add(Point p1, Point q1) {
         Point r;
         
-        // gradient
-        BigInteger gradient = (((p1.getY().subtract(q1.getY())).abs())
-                .multiply((p1.getX().subtract(q1.getX())).abs().modInverse(p)))
-                .mod(p);
-        
-        // Rx = ( gradient^2 - xp - xq ) mod p
-        BigInteger xr = ((gradient.pow(2)).subtract(p1.getX()).subtract(q1.getX()))
-                .mod(p);
-        
-        // Ry = ( gradient(xp - xr) - yp ) mod p
-        BigInteger yr = ((gradient.multiply(p1.getX().subtract(xr)))
-                .subtract(p1.getY())).mod(p);
-        
-        r = new Point(xr, yr);
-        
+        if (p1.equals(q1)) {
+            r = doubles(p1);
+        } else if ((p1.isInf() || q1.isInf()) && !(p1.isInf() && q1.isInf())) {
+            r = p1.isInf()? q1 : p1;
+        } else if (p1.getX().equals(q1.getX()) && p1.getY().equals(q1.getY().multiply(new BigInteger("=1")))) {
+            return new Point(BigInteger.ZERO, BigInteger.ZERO);
+        }
+        else {
+            // gradient
+            BigInteger numerator = q1.getY().subtract(p1.getY());
+            BigInteger denominator = q1.getX().subtract(p1.getX());
+            BigInteger gradient = (numerator.multiply(denominator.modInverse(p))).mod(p);
+            // Rx = ( gradient^2 - xp - xq ) mod p
+            BigInteger xr = ((gradient.pow(2)).subtract(p1.getX()).subtract(q1.getX()))
+                    .mod(p);
+            // Ry = ( gradient(xp - xr) - yp ) mod p
+            BigInteger yr = ((gradient.multiply(p1.getX().subtract(xr)))
+                    .subtract(p1.getY())).mod(p);
+
+            r = new Point(xr, yr);
+        }
         return r;
     }
     
@@ -78,44 +87,28 @@ public class EllipticCurve {
     
     public Point multiply (Point point, BigInteger scalar) {
         
-        /*
-            scalar == 0
-                return (0,0)
-            scalar == 1
-                return point
-            scalar even
-                return 2 * ((scalar/2) * point)
-            scalar odd
-                return point + ((scalar-1)*point)
-        */
-        
-        if (scalar.equals(BigInteger.ZERO)) {
+        if (scalar.equals(BigInteger.ZERO)) {   
             return new Point (new BigInteger("0"), new BigInteger("0"));
         } else if (scalar.equals(BigInteger.ONE)) {
             return point;
         } else if (scalar.mod(new BigInteger("2")).equals(BigInteger.ZERO)) {
-//            return multiply(multiply(point, (scalar.divide(new BigInteger("2")))),
-//                    new BigInteger("2"));
-            
             return doubles(multiply(point, scalar.divide(new BigInteger("2"))));
-            
         } else {
             return add(point, multiply(point, scalar.subtract(BigInteger.ONE)));
         }
     }
     
     public Point subtract(Point p1, Point q1) {
-        Point minQ = new Point(q1.getX(), q1.getY().multiply(new BigInteger("-1")).mod(p));
-        return add(p1, minQ);
+            Point minQ = new Point(q1.getX(), q1.getY().multiply(new BigInteger("-1")).mod(p));
+//            Point minQ = new Point(q1.getX(), this.p.subtract(q1.getY()));
+            System.out.println("p1 = " + p1);
+            System.out.println("minq = " + minQ); 
+            return add(p1, minQ);
     }
     
     public boolean isInGroup(Point point) {
         BigInteger RHS = ((point.getX().pow(3)).add(a.multiply(point.getX())).add(b)).mod(p);
         BigInteger LHS = (point.getY().pow(2)).mod(p);
-        
-        System.out.println("EQ: " + "y^2 mod " + p + " = x^3 + " + a + "x + " + b + " mod " + p);
-        System.out.println("RHS: " + RHS);
-        System.out.println("LHS: " + LHS);
         
         return LHS.equals(RHS);
     }
@@ -127,9 +120,7 @@ public class EllipticCurve {
             x = m.multiply(kaux).add(i);
             yy = (x.pow(3).add(a.multiply(x)).add(b)).mod(p);
             if (yy.modPow(p.subtract(BigInteger.ONE).divide(new BigInteger("2")), p).compareTo(BigInteger.ONE) == 0) {
-                System.out.println(i);
-                System.out.println(yy);
-                y = yy.modPow(p.add(BigInteger.ONE).divide(new BigInteger("4")), p);
+                y = yy.modPow(p.add(BigInteger.ONE).divide(new BigInteger("4")), p); 
                 return new Point(x,y);
             }
         }
@@ -139,6 +130,10 @@ public class EllipticCurve {
     
     public Point getBasePoint() {
         return base;
+    }
+    
+    public BigInteger getP() {
+        return p;
     }
     
 }

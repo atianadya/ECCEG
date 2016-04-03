@@ -13,6 +13,7 @@ import java.math.BigInteger;
  */
 public class Point {
     private BigInteger x, y;
+    private boolean infinite;
     
     public Point() {
         x = new BigInteger("0");
@@ -45,5 +46,13 @@ public class Point {
         pointstr = "(" + x + "," + y + ")";
         
         return pointstr;
+    }
+    
+    public boolean isEqual(Point b) {
+        return this.x.equals(b.x) && this.y.equals(b.y);
+    }
+    
+    public boolean isInf() {
+        return this.x.equals(BigInteger.ZERO) && this.y.equals(BigInteger.ZERO);
     }
 }
