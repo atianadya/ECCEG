@@ -18,11 +18,27 @@ public class ECCEG {
      */
     
     private final EllipticCurve ec;
-    private final BigInteger privateKey;
+    public static BigInteger privateKey;
     public static Point publicKey;
+    public static String plain;
+    public static Point[][] encrypted;
+    public static Point[] encoded;
+    public static Point[] decrypted;
     
     public Point getPublicKey() {
         return publicKey;
+    }
+    
+    public BigInteger getPrivateKey() {
+        return privateKey;
+    }
+    
+    public void setPublicKey(Point publicKey) {
+        this.publicKey = publicKey;
+    }
+    
+    public void setPrivateKey(BigInteger privateKey) {
+        this.privateKey = privateKey;
     }
     
     public ECCEG(EllipticCurve ec) {
@@ -56,12 +72,19 @@ public class ECCEG {
         return pm;
     }
     
+    public String getEncryptedString() {
+        String enc = "";
+        for (int y=0; y<encoded.length; y++) {
+//            System.out.println(encrypted[y][0]+ "," + encrypted[y][1]);
+            enc += encrypted[y][0] + "," + encrypted[y][1] + "\n";
+        }
+        return enc;
+    }
+    
     public static void main(String[] args) {
         // TODO code application logic here
         
-        Point[] encoded;
-        Point[][] encrypted;
-        Point[] decrypted;
+       
         
         EllipticCurve ec = new EllipticCurve(new BigInteger("-1"), new BigInteger("188"), new BigInteger("98764321261"));
         // 98764321261
